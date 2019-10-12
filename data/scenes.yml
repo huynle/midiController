@@ -1,0 +1,5 @@
+scenes:
+  - name: Test scene 1
+    mixer-slot: 1
+  - name: Test scene 2
+    mixer-slot: 2
