@@ -1,6 +1,8 @@
 var easymidi = require('easymidi');
+
+// this statement might turn  on the mixer?
 var inputs = easymidi.getInputs();
-console.log(inputs);
+// console.log(inputs);
 
 var scene = parseInt(process.argv[2]) || 1;
 

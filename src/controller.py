@@ -1,10 +1,15 @@
-# from time import sleep
+import RPi.GPIO as GPIO
+import collections
 import time
+
+from Naked.toolshed.shell import execute_js, muterun_js
 version = "0.0.1"
 
 class Controller(object):
     button_pressed = 1
     button_released = 2
+    IO_ON = 3
+    IO_OFF = 4
 
     def __init__(self):
         # initialize display
@@ -21,6 +26,14 @@ class Controller(object):
         self._buttonPressedEvents= []
         self._buttonReleasedEvents= []
         self._eventLock = False
+        self._ioEvents = {
+            Controller.IO_ON: collections.defauldict(lambda: []),
+            Controller.IO_OFF: collections.defauldict(lambda: []),
+        }
+        self._defaultUpDown = GPIO.PUD_UP
+
+    def _setDefaultPullUpDown(self, updown=GPIO.PUD_UP):
+        self._defaultUpDown = updown
 
     def _switchPressed(self):
         if not self._eventLock:
@@ -78,6 +91,19 @@ class Controller(object):
         self._display.draw("Version {0}".format(version), lineNumber=2)
         self._rotEncoder.setArraySize(len(self._allScenes))
 
+        def setupPins(pins):
+            for pin in pins:
+                GPIO.setup(pin, pull_up_down=self._defaultUpDown)
+                GPIO.add_event_detect(pin,
+                                      GPIO.BOTH,
+                                      callback=self._GPIOEventCallback,
+                                      bouncetime=self.switchBounceTime)
+
+        usePinIoOff = [pin for pin, events in self._ioEvents[self.IO_OFF].iteritems()]
+        setupPins(usePinIoOff)
+        usePinIoOn = [pin for pin, events in self._ioEvents[self.IO_ON].iteritems()]
+        setupPins(usePinIoOn)
+
     def setRotaryEncoder(self, rotEncoder):
         self._rotEncoder = rotEncoder
 
@@ -100,7 +126,7 @@ class Controller(object):
     #     for event in events:
     #         self._rotaryEvents.append(event)
 
-    def setRotaryButtonPressedEvents(self, *events):
+    def setTimeRotaryButtonPressedEvents(self, *events):
         for event in events:
             self._buttonPressedEvents.append(event)
 
@@ -109,6 +135,35 @@ class Controller(object):
     #         self._buttonReleasedEvents.append(event)
     def setRotaryButtonReleasedEvents(self, eventDict):
         self._buttonReleasedEvents = eventDict
+
+    def setGPIOEvents(self, io_pin, io_state, *events):
+        for events in events:
+            self._ioEvents[self.IO_OFF][io_pin].append(event)
+
+    def _GPIOEventCallback(self, pin):
+        """
+        Special method to execute for event detection.
+        """
+        pin_read = GPIO.input(pin)
+
+        if not pin_read and self._defaultUpDown is GPIO.PUD_UP:
+            # if the input is high
+            IO_STATE = self.IO_ON
+        elif pin_read and self._defaultUpDown is GPIO.PUD_UP:
+            IO_STATE = self.IO_OFF
+        elif not pin_read and self._defaultUpDown is GPIO.PUD_DOWN:
+            IO_STATE = self.IO_OFF
+        elif pin_read and self._defaultUPDown is GPIO.PUD_DOWN:
+            IO_STATE = self.IO_ON
+
+        events = self._ioEvents[IO_STATE].get(pin, [])
+        for event in events:
+            if isinstance(event, (tuple, list)):
+                actualEvent = event[0]
+                args = event[1:]
+                actualEvent(*args)
+            else:
+                event()
 
     def _runRotaryEvents(self, sceneId):
         self.setCurrentSceneId(sceneId)
@@ -149,22 +204,35 @@ class Controller(object):
                 event()
 
     # ------------------------- EVENTS --------------------
+
     def _eventSetSceneDisplay(self):
         self._display.clearDisplay()
         self._display.draw("{0}".format(self._allScenes[self._curSceneId]), lineNumber=1)
         print("DISPLAYED: {0}".format(self._allScenes[self._curSceneId]))
 
     def _eventEcho(self, string):
+        """
+        Method for cleanly displaying messages to the OLED screen
+        """
         print("ECHO: {0}".format(string))
 
-    def _eventExecuteJs(self, scriptPath):
-        # success = execute_js(scriptPath)
+    def _eventExecuteJs(self, scriptPath, *args):
         print("Current Time count is {0}".format(self._currentCount))
-        print("EXECUTED: {0}".format(self._allScenes[self._curSceneId]))
+        response = muterun_js(scriptPath, *args)
+
+        if response.exitcode == 0:
+            print(response.stdout)
+            print("EXECUTED: {0}".format(self._allScenes[self._curSceneId]))
+        else:
+            sys.stderr.write(response.stderr)
+
+        # # try this method if execute with argument doesnt work
+        # if len(args) > 0:
+        #     js_command = 'node ' + scriptPath + " " + args
+        # else:
+        #     js_command = 'node ' + scriptPath
 
     def _eventDisplayCountUp(self):
-        # success = execute_js(scriptPath)
-        # self._currentTimeCount = time.time()
 
         if self._switchState is self.button_released:
             return

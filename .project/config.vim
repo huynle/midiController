@@ -18,5 +18,5 @@ let b:rsync_server = "micropi"
 let b:rsync_remote = "~/src/midiController"
 
 " DON't end with forward slash
-let b:rsync_local = "/home/dacrazyazn/src/midiController"
+let b:rsync_local = "/home/hle/src/midiController"
 let b:rsync_exclude = ".project/rsync_exclude"

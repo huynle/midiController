@@ -1,9 +1,6 @@
 import RPi.GPIO as GPIO
 from time import sleep
 
-CLOCKPIN = 5
-DATAPIN = 6
-SWITCHPIN = 13
 
 class KY040(object):
 
@@ -24,6 +21,8 @@ class KY040(object):
         self._arraySize = 0
         self._switchTimer = 0.1
 
+
+    def initialize(self):
         #setup pins
         GPIO.setup(clockPin, GPIO.IN)
         GPIO.setup(dataPin, GPIO.IN)
@@ -31,7 +30,6 @@ class KY040(object):
         # set switch pin to be high. When pressed, voltage goes to zero
         GPIO.setup(switchPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-    def _start(self):
         GPIO.add_event_detect(self.clockPin,  # this `clockPin` would be the `pin` argument for the callback
                               GPIO.FALLING,
                               callback=self._clockCallback,
@@ -40,10 +38,6 @@ class KY040(object):
                               GPIO.BOTH,
                               callback=self.switchCallback,
                               bouncetime=self.switchBounceTime)
-        # GPIO.add_event_detect(self.switchPin,
-        #                       GPIO.RISING,
-        #                       callback=self.switchReleasedCallback,
-        #                       bouncetime=self.switchBounceTime)
 
     def stop(self):
         GPIO.remove_event_detect(self.clockPin)
@@ -105,11 +99,14 @@ class KY040(object):
             self._controller._switchPressed()
 
     @classmethod
-    def start(cls):
+    def start(cls, clockpink, datapin, switchpin):
+        """
+        The bounce time has been tuned
+        and Pins are in BCM mode
+        """
         GPIO.setmode(GPIO.BCM)
-        ky040 = cls(CLOCKPIN, DATAPIN, SWITCHPIN, rotaryBounceTime=250, switchBounceTime=100)
+        ky040 = cls(clockpin, datapin, switchpin, rotaryBounceTime=250, switchBounceTime=100)
         # (clockPin, dataPin, switchPin, rotaryBounceTime=250, switchBounceTime=300):
-        ky040._start()
+        ky040.initialize()
         return ky040
 
-ky040 = KY040.start()

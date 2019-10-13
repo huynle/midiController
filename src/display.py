@@ -1,3 +1,5 @@
+# Will need to hook the display up to the I2C pins
+
 import time
 
 import Adafruit_GPIO.SPI as SPI

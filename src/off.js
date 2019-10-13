@@ -1,6 +1,6 @@
 var easymidi = require('easymidi');
-var inputs = easymidi.getInputs();
-console.log(inputs);
+// var inputs = easymidi.getInputs();
+// console.log(inputs);
 
 
 var qchan = 0;
