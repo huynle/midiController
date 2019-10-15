@@ -24,11 +24,11 @@ class KY040(object):
 
     def initialize(self):
         #setup pins
-        GPIO.setup(clockPin, GPIO.IN)
-        GPIO.setup(dataPin, GPIO.IN)
+        GPIO.setup(self.clockPin, GPIO.IN)
+        GPIO.setup(self.dataPin, GPIO.IN)
 
         # set switch pin to be high. When pressed, voltage goes to zero
-        GPIO.setup(switchPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(self.switchPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
         GPIO.add_event_detect(self.clockPin,  # this `clockPin` would be the `pin` argument for the callback
                               GPIO.FALLING,
@@ -99,7 +99,7 @@ class KY040(object):
             self._controller._switchPressed()
 
     @classmethod
-    def start(cls, clockpink, datapin, switchpin):
+    def start(cls, clockpin, datapin, switchpin):
         """
         The bounce time has been tuned
         and Pins are in BCM mode

@@ -27,8 +27,8 @@ class Controller(object):
         self._buttonReleasedEvents= []
         self._eventLock = False
         self._ioEvents = {
-            Controller.IO_ON: collections.defauldict(lambda: []),
-            Controller.IO_OFF: collections.defauldict(lambda: []),
+            Controller.IO_ON: collections.defaultdict(lambda: []),
+            Controller.IO_OFF: collections.defaultdict(lambda: []),
         }
         self._defaultUpDown = GPIO.PUD_UP
 
@@ -93,15 +93,14 @@ class Controller(object):
 
         def setupPins(pins):
             for pin in pins:
-                GPIO.setup(pin, pull_up_down=self._defaultUpDown)
+                GPIO.setup(pin, GPIO.IN, pull_up_down=self._defaultUpDown)
                 GPIO.add_event_detect(pin,
                                       GPIO.BOTH,
-                                      callback=self._GPIOEventCallback,
-                                      bouncetime=self.switchBounceTime)
+                                      callback=self._GPIOEventCallback)
 
-        usePinIoOff = [pin for pin, events in self._ioEvents[self.IO_OFF].iteritems()]
+        usePinIoOff = [pin for pin, events in self._ioEvents[self.IO_OFF].items()]
         setupPins(usePinIoOff)
-        usePinIoOn = [pin for pin, events in self._ioEvents[self.IO_ON].iteritems()]
+        usePinIoOn = [pin for pin, events in self._ioEvents[self.IO_ON].items()]
         setupPins(usePinIoOn)
 
     def setRotaryEncoder(self, rotEncoder):
@@ -126,18 +125,18 @@ class Controller(object):
     #     for event in events:
     #         self._rotaryEvents.append(event)
 
-    def setTimeRotaryButtonPressedEvents(self, *events):
+    def setRotaryButtonPressedEvents(self, *events):
         for event in events:
             self._buttonPressedEvents.append(event)
 
     # def setRotaryButtonReleasedEvents(self, *events):
     #     for event in events:
     #         self._buttonReleasedEvents.append(event)
-    def setRotaryButtonReleasedEvents(self, eventDict):
+    def setTimedRotaryButtonReleasedEvents(self, eventDict):
         self._buttonReleasedEvents = eventDict
 
     def setGPIOEvents(self, io_pin, io_state, *events):
-        for events in events:
+        for event in events:
             self._ioEvents[self.IO_OFF][io_pin].append(event)
 
     def _GPIOEventCallback(self, pin):
@@ -218,7 +217,7 @@ class Controller(object):
 
     def _eventExecuteJs(self, scriptPath, *args):
         print("Current Time count is {0}".format(self._currentCount))
-        response = muterun_js(scriptPath, *args)
+        response = execute_js(scriptPath, *args)
 
         if response.exitcode == 0:
             print(response.stdout)

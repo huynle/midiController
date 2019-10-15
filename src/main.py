@@ -6,7 +6,8 @@ import Adafruit_SSD1306
 
 from time import sleep
 import RPi.GPIO as GPIO
-from ky040 import ky040
+# from ky040 import KY0404
+import ky040 as rot
 from controller import Controller
 
 version = "0.0.1"
@@ -25,7 +26,7 @@ switchpin = 13
 buttonpin = 26  # pIN nUMBER FOR ROTARY SWITCH BUTTON
 
 # get an instance of our hardware
-ky040 = KY040.start(clockPin, dataPin, switchPin)
+ky040 = rot.KY040.start(clockpin, datapin, switchpin)
 display = Display(padding=0, totalLines=4)
 
 # some temporary setting up
@@ -40,12 +41,12 @@ controller.importScenes(scenesArray)
 
 # set up the supporting events
 controller.setGPIOEvents(buttonpin, controller.IO_OFF,
-    (controller._eventEcho, "Power Up Sequence")
+    (controller._eventEcho, "Power Up Sequence"),
     (controller._eventExecuteJs, "src/scene.js", lastScene),
 )
 
 controller.setGPIOEvents(buttonpin, controller.IO_ON,
-    (controller._eventEcho, "Power Down Sequence")
+    (controller._eventEcho, "Power Down Sequence"),
     (controller._eventExecuteJs, "src/scene.js",),
 )
 
