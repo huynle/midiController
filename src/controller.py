@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+import sys
 import collections
 import time
 
@@ -26,16 +27,42 @@ class Controller(object):
         self._buttonPressedEvents= []
         self._buttonReleasedEvents= []
         self._eventLock = False
+        self._eventButtonPressedLock = False
         self._ioEvents = {
             Controller.IO_ON: collections.defaultdict(lambda: []),
             Controller.IO_OFF: collections.defaultdict(lambda: []),
         }
         self._defaultUpDown = GPIO.PUD_UP
 
+        self._debug = True
+
+    @property
+    def selectedSceneId(self):
+        return self._curSceneId
+
     def _setDefaultPullUpDown(self, updown=GPIO.PUD_UP):
         self._defaultUpDown = updown
 
+    def _switchPressed_trial(self):
+        print("Switch Pressed start at {0}".format(time.time()))
+        # setting the switch state
+        self._switchState = self.button_pressed
+        self._currentTimeCount = time.time()
+        self._currentCount = 0
+        self._runRotaryButtonPressedEvents()
+        print("Switch Pressed end at {0}".format(time.time()))
+
+    def _switchReleased_trial(self):
+        print("Switch Released start at {0}".format(time.time()))
+        # setting the switch state
+        self._switchState = self.button_released
+        self._currentTimeCount = None
+        self._currentCount = None
+        self._runRotaryButtonReleasedEvents()
+        print("Switch Released end at {0}".format(time.time()))
+
     def _switchPressed(self):
+        print("Switch Pressed start at {0}".format(time.time()))
         if not self._eventLock:
             print("locking")
             self._eventLock = True
@@ -51,8 +78,10 @@ class Controller(object):
             while self._eventLock:
                 time.sleep(0.01)
             self._switchPressed()
+        print("Switch Pressed end at {0}".format(time.time()))
 
     def _switchReleased(self):
+        print("Switch Released start at {0}".format(time.time()))
         if not self._eventLock:
             print("locking")
             self._eventLock = True
@@ -69,6 +98,7 @@ class Controller(object):
                 print("there is a current process running")
                 time.sleep(0.01)
             self._switchReleased()
+        print("Switch Released end at {0}".format(time.time()))
 
     def runForever(self):
         # give the display to the rotary encoder to update
@@ -76,11 +106,9 @@ class Controller(object):
         print("RUNNING FOREVER!!")
         try:
             while True:
+                # this if statement is for the count up to happen
                 if self._currentTimeCount and self._switchState is self.button_pressed:
-                    # print("RUNNING BUTTON PRESSED IN FOREVER LOOP")
                     self._runRotaryButtonPressedEvents()
-                # elif not self._currentTimeCount and self._switchState is self.button_released:
-                #     self._runRotaryEvents(self._curSceneId)
                 time.sleep(0.1)
         finally:
             self._rotEncoder.stop()
@@ -89,6 +117,7 @@ class Controller(object):
         self._display.initialize()
         self._display.draw("MidiController", lineNumber=1)
         self._display.draw("Version {0}".format(version), lineNumber=2)
+        # set the order of scenes in the rotary encoder
         self._rotEncoder.setArraySize(len(self._allScenes))
 
         def setupPins(pins):
@@ -169,12 +198,22 @@ class Controller(object):
         self._runEvents(self._rotaryEvents)
 
     def _runRotaryButtonPressedEvents(self):
+        if self._debug: print("Running Rotary Pressed Event at {0}".format(time.time()))
+        if self._eventButtonPressedLock:
+            if self._debug: print("Event Lock is still in place, exiting button pressed event")
+            return
+
+        self._eventButtonPressedLock = True
         self._runEvents(self._buttonPressedEvents)
+        self._eventButtonPressedLock = False
 
     def _runRotaryButtonReleasedEvents(self):
             self._runTimeElapsedEvents(self._buttonReleasedEvents)
 
     def _runTimeElapsedEvents(self, events):
+        """
+        Depending on how long the switch button is held down fors
+        """
         if not self._currentCount:
             print("NO TIME ELAPSED DETECTED. no event executed. CURRENT COUNT IS: {0}".format(self._currentCount))
             return
@@ -184,13 +223,12 @@ class Controller(object):
         time_array = list(events.keys())
         time_selected = closest(time_array, self._currentCount)
         print("selected time closest to {0}: {1}".format(self._currentCount, time_selected))
-        self._display.draw([(1, "Activating Scene:"),
-                            (2, "{0}".format(self._allScenes[self._curSceneId])),
-                            ], clearDisplay=True)
-        # self._runEvents(events[time_selected])
+        # self._display.draw([(1, "Activating Scene:"),
+        #                     (2, "{0}".format(self._allScenes[self._curSceneId])),
+        #                     ], clearDisplay=True)
+        self._runEvents(events[time_selected], self._allScenes[self._curSceneId])
 
-
-    def _runEvents(self, events):
+    def _runEvents(self, events, *args):
         for event in events:
             # print("event is {0}".format(event))
             if isinstance(event, tuple):
@@ -205,7 +243,6 @@ class Controller(object):
     # ------------------------- EVENTS --------------------
 
     def _eventSetSceneDisplay(self):
-        # self._display.clearDisplay()
         self._display.draw("{0}".format(self._allScenes[self._curSceneId]), lineNumber=1, clearDisplay=True)
         print("DISPLAYED: {0}".format(self._allScenes[self._curSceneId]))
 
@@ -214,16 +251,27 @@ class Controller(object):
         Method for cleanly displaying messages to the OLED screen
         """
         print("ECHO: {0}".format(string))
+        self._display.draw([(1, "ECHO:"),
+                            (2, "{0}".format(string)),
+                            ], clearDisplay=True)
 
     def _eventExecuteJs(self, scriptPath, *args):
         print("Current Time count is {0}".format(self._currentCount))
-        response = execute_js(scriptPath, *args)
+        self._display.draw([(1, "Activating Scene:"),
+                            (2, "{0}".format(self._allScenes[self._curSceneId])),
+                            ], clearDisplay=True)
+        self._debug: print("Executing JS: {0}, with args: {1}".format(scriptPath, args))
 
-        if response.exitcode == 0:
-            print(response.stdout)
-            print("EXECUTED: {0}".format(self._allScenes[self._curSceneId]))
-        else:
-            sys.stderr.write(response.stderr)
+        try:
+            response = execute_js(scriptPath, *args)
+            if response:
+                print(response.stdout)
+                print("EXECUTED: {0}".format(self._allScenes[self._curSceneId]))
+            else:
+                # sys.stderr.write(response.stderr)
+                self._debug: print("Response from execution of {0}: {1}".format(scriptPath, response))
+        except Exception as err:
+            if self._debug: print("*** EXCEPTION happened with JS script: \n{0}".format(err))
 
         # # try this method if execute with argument doesnt work
         # if len(args) > 0:
@@ -239,25 +287,15 @@ class Controller(object):
             print("Something went wrong. shouldnt be counting up if not pressed")
             return
 
-        # self._display.draw("Counting: {0}".format(self._currentCount), lineNumber=2, clearDisplay=True)
-        writelines = [(0,""),
-                      (1, self._currentCount),
-                      (2,""),
-                      (3,"")]
-        self._display.draw(writelines, clearDisplay=True)
-        # if time.time()>self._currentTimeCount:
-        #     # self._display.clearDisplay()
-        #     # self._display.draw("Counting: {0}".format(self._currentCount), lineNumber=2, clearDisplay=True)
-        #     # writelines = [(0,""),
-        #     #               (1, self._currentCount),
-        #     #               (2,""),
-        #     #               (3,"")]
-        #     self._display.draw(writelines, clearDisplay=True)
-        #     self._currentTimeCount = self._currentTimeCount + 1
-        #     self._currentCount = self._currentCount + 1
-        #     print("Count time {0}: {1}".format(self._currentTimeCount,self._allScenes[self._curSceneId]))
-        #     print("Count {0}: {1}".format(self._currentCount,self._allScenes[self._curSceneId]))
-        # # self._currentTimeCount += 1
+        print("******** WHOA start ********* {0}".format(time.time()))
+        if time.time() > self._currentTimeCount:
+            print("*** Got into if ***")
+            self._display.draw(self._currentCount, lineNumber=2, clearDisplay=True)
+            self._currentTimeCount = self._currentTimeCount + 1
+            self._currentCount = self._currentCount + 1
+            print("Count time {0}: {1}".format(self._currentTimeCount,self._allScenes[self._curSceneId]))
+            print("Count {0}: {1}".format(self._currentCount,self._allScenes[self._curSceneId]))
+        print("******** WHOA end ********* {0}".format(time.time()))
 
     def _eventShutdown(self, switchTimer):
         print("Shutting Down")

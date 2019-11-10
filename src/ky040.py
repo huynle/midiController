@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO
-from time import sleep
+import time
 
 
 class KY040(object):
@@ -90,12 +90,11 @@ class KY040(object):
         self._controller._runRotaryEvents(self._count)
 
     def switchCallback(self, pin):
-        # self._controller._toggleSwitch()
         if GPIO.input(self.switchPin):
-            print("Rising edge detected")
+            print("Rising edge detected at {0}".format(time.time()))
             self._controller._switchReleased()
         else:
-            print("Falling edge detected")
+            print("Falling edge detected at {0}".format(time.time()))
             self._controller._switchPressed()
 
     @classmethod

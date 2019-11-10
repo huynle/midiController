@@ -54,7 +54,24 @@ def test_displayTimeCountUpFast():
             # print("Count {0}".format(currentCount))
 
 
+def test_cleardisplay():
 
+    display = Display(padding=-2, totalLines=4)
+    display.initialize()
+    display.draw("test")
+
+    writelines = [
+        (0, "asdf"),
+        (1, "asdf"),
+        (2, "asdf"),
+        (3, "asdf")
+    ]
+
+    display.draw(writelines, clearDisplay=True)
+    time.sleep(2)
+    display.clearDisplay()
+    # display.draw([], clearDisplay=True)
 
 if __name__ == "__main__":
     test_displayTimeCountUpFast()
+    # test_cleardisplay()

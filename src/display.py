@@ -80,7 +80,8 @@ class Display(object):
         # Move left to right keeping track of the current x position for drawing shapes.
         if clearDisplay:
             if self._debug: print("Clearing screen now...")
-            self.clearDisplay()
+            # self.clearDisplay()
+            self._draw.rectangle((0,0,self._width,self._height), outline=0, fill=0)
 
         if value and isinstance(value, list):
             if len(value)>self._totalLines:
@@ -103,5 +104,8 @@ class Display(object):
         # time.sleep(0.05)
 
     def clearDisplay(self):
+        if self._debug: print("Clearing Image...")
         # Draw a black filled box to clear the image.
         self._draw.rectangle((0,0,self._width,self._height), outline=0, fill=0)
+        self._disp.image(self._image)
+        self._disp.display()

@@ -63,8 +63,8 @@ controller.setRotaryButtonPressedEvents(
 
 # time to release: actions
 controller.setTimedRotaryButtonReleasedEvents({
-    1: [(controller._eventEcho, "TESTING 1 sec")],
-    3: [(controller._eventExecuteJs, "src/test.js"),],
+    1: [(controller._eventExecuteJs, "./scene.js", controller.selectedSceneId),],
+    2: [(controller._eventEcho, "TESTING 1 sec")],
     10: [(controller._eventEcho, "TESTING 10 sec")],
 })
 
