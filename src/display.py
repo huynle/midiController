@@ -16,7 +16,7 @@ class Display(object):
     def __init__(self, padding = -2, totalLines=4):
         self._padding = padding
         self._totalLines = totalLines
-        self._leftPadding = 10
+        self._leftPadding = 0
 
         self._disp = None
         self._image = None
@@ -29,14 +29,21 @@ class Display(object):
         self._width = None
         self._height = None
 
+        self._debug = True
+
+    @property
     def ySpacing(self):
         # int would round down without much work
-        return int(self._height/self._totalLines)
+        ret = int(self._height/self._totalLines)
+        if self._debug: print("y spacing is: {0}".format(ret))
+        return ret
 
     def _yPos(self, lineNumber=0):
         # if lineNumber == 0:
             # return lineNumber*self.ySpacing()+self._padding
-        return lineNumber*self.ySpacing()+self._padding
+        ret = lineNumber*self.ySpacing+self._padding
+        if self._debug: print("with line {0}, the ypos is {1}".format(lineNumber, ret))
+        return ret
         # return lineNumber*self.ySpacing()
 
     def _xPos(self):
@@ -72,6 +79,7 @@ class Display(object):
     def draw(self, value, lineNumber=0, clearDisplay=False):
         # Move left to right keeping track of the current x position for drawing shapes.
         if clearDisplay:
+            if self._debug: print("Clearing screen now...")
             self.clearDisplay()
 
         if value and isinstance(value, list):
@@ -79,13 +87,18 @@ class Display(object):
                 raise NotImplementedError("Cannot display more than {0} at the moment.".format(self._totalLines))
             for ith, linestring in enumerate(value):
                 if isinstance(linestring, tuple):
+                    if self._debug: print("Drawing: {0}".format(linestring[1]))
                     self._draw.text((self._xPos(), self._yPos(linestring[0])), "{0}".format(linestring[1]),  font=self._font, fill=255)
                 else:
                     self._draw.text((self._xPos(), self._yPos(ith)), "{0}".format(linestring),  font=self._font, fill=255)
+                    if self._debug: print("Drawing: {0}".format(linestring))
         else:
             self._draw.text((self._xPos(), self._yPos(lineNumber)), "{0}".format(value),  font=self._font, fill=255)
+            if self._debug: print("Drawing: {0}".format(value))
 
+        if self._debug: print("Setting image..")
         self._disp.image(self._image)
+        if self._debug: print("Displaying...")
         self._disp.display()
         # time.sleep(0.05)
 

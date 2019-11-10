@@ -205,8 +205,8 @@ class Controller(object):
     # ------------------------- EVENTS --------------------
 
     def _eventSetSceneDisplay(self):
-        self._display.clearDisplay()
-        self._display.draw("{0}".format(self._allScenes[self._curSceneId]), lineNumber=1)
+        # self._display.clearDisplay()
+        self._display.draw("{0}".format(self._allScenes[self._curSceneId]), lineNumber=1, clearDisplay=True)
         print("DISPLAYED: {0}".format(self._allScenes[self._curSceneId]))
 
     def _eventEcho(self, string):
@@ -240,19 +240,24 @@ class Controller(object):
             return
 
         # self._display.draw("Counting: {0}".format(self._currentCount), lineNumber=2, clearDisplay=True)
-        if time.time()>self._currentTimeCount:
-            # self._display.clearDisplay()
-            # self._display.draw("Counting: {0}".format(self._currentCount), lineNumber=2, clearDisplay=True)
-            writelines = [(0,""),
-                          (1, self._currentCount),
-                          (2,""),
-                          (3,"")]
-            self._display.draw(writelines, clearDisplay=True)
-            self._currentTimeCount = self._currentTimeCount + 1
-            self._currentCount = self._currentCount + 1
-            print("Count time {0}: {1}".format(self._currentTimeCount,self._allScenes[self._curSceneId]))
-            print("Count {0}: {1}".format(self._currentCount,self._allScenes[self._curSceneId]))
-        # self._currentTimeCount += 1
+        writelines = [(0,""),
+                      (1, self._currentCount),
+                      (2,""),
+                      (3,"")]
+        self._display.draw(writelines, clearDisplay=True)
+        # if time.time()>self._currentTimeCount:
+        #     # self._display.clearDisplay()
+        #     # self._display.draw("Counting: {0}".format(self._currentCount), lineNumber=2, clearDisplay=True)
+        #     # writelines = [(0,""),
+        #     #               (1, self._currentCount),
+        #     #               (2,""),
+        #     #               (3,"")]
+        #     self._display.draw(writelines, clearDisplay=True)
+        #     self._currentTimeCount = self._currentTimeCount + 1
+        #     self._currentCount = self._currentCount + 1
+        #     print("Count time {0}: {1}".format(self._currentTimeCount,self._allScenes[self._curSceneId]))
+        #     print("Count {0}: {1}".format(self._currentCount,self._allScenes[self._curSceneId]))
+        # # self._currentTimeCount += 1
 
     def _eventShutdown(self, switchTimer):
         print("Shutting Down")

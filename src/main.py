@@ -13,21 +13,23 @@ from controller import Controller
 version = "0.0.1"
 
 current_count = 1
+
 # Set up scenes here
 scenesArray = ["Ca Doan 1",
-               "Speaker",
-               "Retreat",
-               "Ca Doan 2"]
+               "Speaker 2",
+               "Retreat 3",
+               "Ca Doan 4"]
 
 # Setting Up
 clockpin = 5
 datapin = 6
 switchpin = 13
 buttonpin = 26  # pIN nUMBER FOR ROTARY SWITCH BUTTON
+sequencerPi = 17
 
 # get an instance of our hardware
 ky040 = rot.KY040.start(clockpin, datapin, switchpin)
-display = Display(padding=0, totalLines=4)
+display = Display(padding=-2, totalLines=4)
 
 # some temporary setting up
 lastScene = 1

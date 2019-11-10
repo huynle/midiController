@@ -8,7 +8,7 @@ from datetime import datetime
 
 
 
-def testRun():
+def testReadSequencer():
     GPIO.setmode(GPIO.BCM)
     pin = 17
 
@@ -19,7 +19,23 @@ def testRun():
                           bouncetime=500)
     try:
         while True:
-            time.sleep(1)
+            time.sleep(0.1)
+    except KeyboardInterrupt:
+        GPIO.cleanup()
+
+def testWriteSequencer():
+    GPIO.setmode(GPIO.BCM)
+    pin = 27
+
+    GPIO.setup(pin, GPIO.OUT)
+    try:
+        while True:
+            time.sleep(5)
+            print("write ON")
+            GPIO.output(pin, 1)
+            time.sleep(5)
+            print("write OFF")
+            GPIO.output(pin, 0)
     except KeyboardInterrupt:
         GPIO.cleanup()
 
@@ -49,4 +65,5 @@ def runJsScript():
 
 if __name__ == "__main__":
     # run()
-    testRun()
+    # testReadSequencer()
+    testWriteSequencer()
