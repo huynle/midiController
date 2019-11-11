@@ -120,15 +120,12 @@ class Controller(object):
         """
         # set rpi on BCM mode
         GPIO.setmode(GPIO.BCM)
-        # Shell scripts for system monitoring from here : https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
-        cmd = "hostname -I | cut -d\' \' -f1"
-        # cmd = "hostname -I | cut -d' ' -f1"
-        IP = subprocess.check_output(cmd, shell = True )
 
         self._display.initialize()
-        self._display.draw("MidiController", lineNumber=1)
-        self._display.draw("Version: {0}".format(version), lineNumber=2)
-        self._display.draw("IP: {0}".format(IP.decode("utf-8")), lineNumber=3)
+        # self._display.draw("MidiController", lineNumber=1)
+        # self._display.draw("Version: {0}".format(version), lineNumber=2)
+        # self._display.draw("IP: {0}".format(IP.decode("utf-8")), lineNumber=3)
+        # self._eventIntroScreen()
         # set the order of scenes in the rotary encoder
         self._rotEncoder.setArraySize(len(self._allScenes))
 
@@ -309,7 +306,6 @@ class Controller(object):
             self._runOutOfIdleEvents()
             return
 
-
         self._eventButtonPressedLock = True
         self._runEvents(self._buttonPressedEvents)
         self._eventButtonPressedLock = False
@@ -376,6 +372,18 @@ class Controller(object):
         # for ith, string in enumerate(stringArray):
         #     echoString.append((ith, string))
         self._display.draw(echoString, clearDisplay=True)
+
+    def _eventIntroScreen(self):
+        if self._debug: print("Intro screen")
+        # Shell scripts for system monitoring from here : https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
+        cmd = "hostname -I | cut -d\' \' -f1"
+        # cmd = "hostname -I | cut -d' ' -f1"
+        IP = subprocess.check_output(cmd, shell = True )
+        self._display.draw([
+            (1,"MidiController"),
+            (2,"Version: {0}".format(version)),
+            (3,"IP: {0}".format(IP.decode("utf-8")))
+        ], clearDisplay=True)
 
     def _eventClearDisplay(self):
         """

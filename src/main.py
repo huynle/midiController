@@ -47,7 +47,9 @@ controller.setInputPins(sequencerLedPin)
 controller.setOutputPins(sequencerCtrlPin)
 
 # for AFTER all the initialization
-controller.setInitializedEvents()
+controller.setInitializedEvents(
+    (controller._eventIntroScreen,),
+)
 
 # For when the pi is idle
 controller.setIdleEvents(
@@ -57,7 +59,10 @@ controller.setIdleEvents(
 )
 
 # For when the pi is idle
-controller.setOutOfIdleEvents()
+# FIXME: not completely working yet
+controller.setOutOfIdleEvents(
+    # (controller._eventIntroScreen,),
+)
 
 ### Setting all the rotary events
 controller.setRotaryEvents(
@@ -94,8 +99,10 @@ controller.setTimedRotaryButtonReleasedEvents({
     ],
 
     # for turnning off
-    10: [
-        (controller._eventEcho, "Settings Menu:\nNot Implemented Yet."),
+    9: [
+        (controller._eventEcho, "Settings Menu:\n\nNot Implemented Yet."),
+        (controller._eventSecondsToWait, 2),
+        (controller._eventIntroScreen,)
     ],
 })
 
