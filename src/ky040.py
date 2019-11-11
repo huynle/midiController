@@ -21,6 +21,8 @@ class KY040(object):
         self._arraySize = 0
         self._switchTimer = 0.1
 
+        self._debug = True
+
 
     def initialize(self):
         #setup pins
@@ -60,7 +62,7 @@ class KY040(object):
         self._arraySize = arraySize
 
     def setController(self, controller):
-        print("setting controller")
+        if self._debug: print("setting controller")
         self._controller = controller
 
     def setSwitchTimer(self, timer):
@@ -80,7 +82,7 @@ class KY040(object):
     def rotaryCallback(self, direction):
         # global current_count
         current_count = self._count
-        print("Current count is {0}".format(current_count))
+        if self._debug: print("Current count is {0}".format(current_count))
         if direction:
             current_count += 1
         else:
@@ -91,10 +93,10 @@ class KY040(object):
 
     def switchCallback(self, pin):
         if GPIO.input(self.switchPin):
-            print("Rising edge detected at {0}".format(time.time()))
+            if self._debug: print("Rising edge detected at {0}".format(time.time()))
             self._controller._switchReleased()
         else:
-            print("Falling edge detected at {0}".format(time.time()))
+            if self._debug: print("Falling edge detected at {0}".format(time.time()))
             self._controller._switchPressed()
 
     @classmethod
