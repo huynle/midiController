@@ -51,8 +51,8 @@ controller.setInitializedEvents()
 
 # For when the pi is idle
 controller.setIdleEvents(
-    (controller._eventEcho, "peace out.."),
-    (controller._eventSecondsToWait, 4),
+    (controller._eventEcho, "Going idle..."),
+    (controller._eventSecondsToWait, 1),
     (controller._eventClearDisplay)
 )
 
@@ -87,10 +87,15 @@ controller.setTimedRotaryButtonReleasedEvents({
     ],
 
     # for turnning off
-    10: [
+    8: [
         (controller._eventEcho, "TESTING 5 sec\nECHO!"),
         (controller._eventExecuteJs, "./off.js"),
         (controller._eventSequencerPower, sequencerCtrlPin, controller.SEQ_OFF)
+    ],
+
+    # for turnning off
+    10: [
+        (controller._eventEcho, "Settings Menu:\nNot Implemented Yet."),
     ],
 })
 
