@@ -81,15 +81,15 @@ controller.setTimedRotaryButtonReleasedEvents({
         (controller._eventEcho, "Hold until\n----------5----------\nto prevent accidental\npresses"),
     ],
 
-    5: [
-        (controller._eventExecuteJs, "./scene.js", controller.currentSceneId),
+    2: [
+        (controller._eventExecuteJs, "src/scene.js"),
     ],
 
-    ## for turning ON
-    6: [
-        (controller._eventEcho, "TESTING 3 sec\nECHO!"),
-        (controller._eventSequencerPower, sequencerCtrlPin, controller.SEQ_ON),
-    ],
+    # ## for turning ON
+    # 6: [
+    #     (controller._eventEcho, "TESTING 3 sec\nECHO!"),
+    #     (controller._eventSequencerPower, sequencerCtrlPin, controller.SEQ_ON),
+    # ],
 
     # for turnning off
     8: [

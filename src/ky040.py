@@ -82,11 +82,15 @@ class KY040(object):
     def rotaryCallback(self, direction):
         # global current_count
         current_count = self._count
-        if self._debug: print("Current count is {0}".format(current_count))
-        if direction:
+        if self._debug: print("Rotary Callback Current count is {0}".format(current_count))
+
+        if direction == self.ANTICLOCKWISE:
             current_count += 1
-        else:
+        elif direction == self.CLOCKWISE:
             current_count -= 1
+        else:
+            raise ValueError("Cannot resolve '{0}' for direction".format(direction))
+
         self._count = self.loopCounter(current_count)
         # print("Count AFTER is {0}".format(self._count))
         self._controller._runRotaryEvents(self._count)

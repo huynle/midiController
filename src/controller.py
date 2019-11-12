@@ -392,33 +392,39 @@ class Controller(object):
         if self._debug: print("Clearing display")
         self._display.clearDisplay()
 
-    def _eventExecuteJs(self, scriptPath, *args):
+    def _eventExecuteJs(self, scriptPath):
         if self._debug: print("Current Time {0}".format(time.time()))
         self._display.draw([(1, "Activating Scene:"),
                             (2, "{0}".format(self._allScenes[self._curSceneId])),
                             ], clearDisplay=True)
-        self._debug: print("Executing JS: {0}, with args: {1}".format(scriptPath, args))
+        if self._debug: print("Executing JS: {0}, with args: {1}".format(scriptPath,self._curSceneId))
         self._eventExecuteJsLock = True
         try:
-            response = execute_js(scriptPath, *args)
-            if response.exitcode == 0:
-                if self._debug: print(response.stdout)
-                if self._debug: print("EXECUTED: {0}".format(self._allScenes[self._curSceneId]))
-                self._selectedSceneId = self._currentSceneId
-            else:
-                # sys.stderr.write(response.stderr)
-                self._debug: print("Response from execution of {0}: {1}".format(scriptPath, response))
+            subprocess_command = ["node", scriptPath, "{0}".format(self._curSceneId)]
+            if self._debug: print("{0}".format(subprocess_command))
+            subprocess.run(subprocess_command)
+            self._selectedSceneId = self._curSceneId
+        except Exception as err:
+            self._eventEcho("Error:\n{0}!\nCheck Log.".format(os.path.basename(scriptPath)))
+            if self._debug: print("*** EXCEPTION happened with JS script: \n{0}".format(err))
+
+    def _eventExecuteJs_withArgs(self, scriptPath, *args):
+        if self._debug: print("Current Time {0}".format(time.time()))
+        self._display.draw([(1, "Activating Scene:"),
+                            (2, "{0}".format(self._allScenes[self._curSceneId])),
+                            ], clearDisplay=True)
+        if self._debug: print("Executing JS: {0}, with args: {1}".format(scriptPath, args))
+        self._eventExecuteJsLock = True
+        try:
+            subprocess_command = ["node", scriptPath] + ["{0}".format(arg) for arg in args]
+            if self._debug: print("{0}".format(subprocess_command))
+            subprocess.run(subprocess_command)
+            self._selectedSceneId = args[0]
         except Exception as err:
             self._eventEcho("Error:\n{0}!\nCheck Log.".format(os.path.basename(scriptPath)))
             if self._debug: print("*** EXCEPTION happened with JS script: \n{0}".format(err))
 
         self._eventExecuteJsLock = False
-
-        # # try this method if execute with argument doesnt work
-        # if len(args) > 0:
-        #     js_command = 'node ' + scriptPath + " " + args
-        # else:
-        #     js_command = 'node ' + scriptPath
 
     def _eventSecondsToWait(self, timeWait):
         if self._debug: print("Current Time {0}".format(time.time()))

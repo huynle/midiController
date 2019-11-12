@@ -12,7 +12,7 @@ def testReadSequencer():
     GPIO.setmode(GPIO.BCM)
     pin = 17
 
-    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.add_event_detect(pin,
                           GPIO.BOTH,
                           callback=detectCallback,
@@ -65,5 +65,5 @@ def runJsScript():
 
 if __name__ == "__main__":
     # run()
-    # testReadSequencer()
-    testWriteSequencer()
+    testReadSequencer()
+    # testWriteSequencer()

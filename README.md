@@ -39,5 +39,9 @@ Select scenes for Allen and Heath QU-32 Mixer using a raspberrypi with KY040 Rot
 
 
 
-# Bugs
-- Display is has line at the top
+# Notes
+- Display is has line at the top is because the GPIO has not been completely cleared on each force exit
+
+
+
+# Known Bugs
