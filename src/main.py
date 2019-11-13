@@ -53,8 +53,8 @@ controller.setInitializedEvents(
 
 # For when the pi is idle
 controller.setIdleEvents(
-    (controller._eventEcho, "Going idle..."),
-    (controller._eventSecondsToWait, 1),
+    # (controller._eventEcho, "Going idle..."),
+    (controller._eventSecondsToWait, 5),
     (controller._eventClearDisplay)
 )
 
@@ -78,28 +78,22 @@ controller.setRotaryButtonPressedEvents(
 # time to release: actions for buttonpin
 controller.setTimedRotaryButtonReleasedEvents({
     1: [
-        (controller._eventEcho, "Hold until\n----------5----------\nto prevent accidental\npresses"),
+        (controller._eventEcho, "Hold until\n----------2----------\nto prevent accidental\npresses"),
     ],
 
     2: [
-        (controller._eventExecuteJs, "src/scene.js"),
+        (controller._eventExecuteJs, "/home/pi/src/midiController/src/scene.js"),
     ],
 
-    # ## for turning ON
-    # 6: [
-    #     (controller._eventEcho, "TESTING 3 sec\nECHO!"),
-    #     (controller._eventSequencerPower, sequencerCtrlPin, controller.SEQ_ON),
-    # ],
+    # for turnning off
+    5: [
+        (controller._eventEcho, "SHUTTING DOWN"),
+        (controller._eventExecuteOFFJs, "/home/pi/src/midiController/src/off.js"),
+        # (controller._eventSequencerPower, sequencerCtrlPin, controller.SEQ_OFF)
+    ],
 
     # for turnning off
     8: [
-        (controller._eventEcho, "TESTING 5 sec\nECHO!"),
-        (controller._eventExecuteJs, "./off.js"),
-        (controller._eventSequencerPower, sequencerCtrlPin, controller.SEQ_OFF)
-    ],
-
-    # for turnning off
-    9: [
         (controller._eventEcho, "Settings Menu:\n\nNot Implemented Yet."),
         (controller._eventSecondsToWait, 2),
         (controller._eventIntroScreen,)
@@ -110,13 +104,13 @@ controller.setTimedRotaryButtonReleasedEvents({
 # # set up the supporting events
 # controller.setGPIOEvents(buttonpin, controller.IO_OFF,
 #     (controller._eventEcho, "Power Up Sequence"),
-#     (controller._eventExecuteJs, "src/scene.js", lastScene),
+#     # (controller._eventExecuteJs, "src/scene.js", lastScene),
 # )
 
-# controller.setGPIOEvents(buttonpin, controller.IO_ON,
-#     (controller._eventEcho, "Power Down Sequence"),
-#     (controller._eventExecuteJs, "src/scene.js",),
-# )
+controller.setGPIOEvents(buttonpin, controller.IO_OFF,
+    (controller._eventEcho, "Power Down Sequence"),
+    # (controller._eventExecuteJs, "src/off.js",),
+)
 
 
 controller.initialize()

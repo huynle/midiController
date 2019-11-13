@@ -57,7 +57,7 @@ class Controller(object):
             Controller.IO_ON: collections.defaultdict(lambda: []),
             Controller.IO_OFF: collections.defaultdict(lambda: []),
         }
-        self._defaultUpDown = GPIO.PUD_UP
+        self._defaultUpDown = GPIO.PUD_DOWN
 
         self._debug = True
 
@@ -400,7 +400,20 @@ class Controller(object):
         if self._debug: print("Executing JS: {0}, with args: {1}".format(scriptPath,self._curSceneId))
         self._eventExecuteJsLock = True
         try:
-            subprocess_command = ["node", scriptPath, "{0}".format(self._curSceneId)]
+            subprocess_command = ["/usr/local/bin/node", scriptPath, "{0}".format(self._curSceneId+1)]
+            if self._debug: print("{0}".format(subprocess_command))
+            subprocess.run(subprocess_command)
+            self._selectedSceneId = self._curSceneId
+        except Exception as err:
+            self._eventEcho("Error:\n{0}!\nCheck Log.".format(os.path.basename(scriptPath)))
+            if self._debug: print("*** EXCEPTION happened with JS script: \n{0}".format(err))
+
+    def _eventExecuteOFFJs(self, scriptPath):
+        if self._debug: print("Current Time {0}".format(time.time()))
+        if self._debug: print("Executing JS: {0}, with args: {1}".format(scriptPath,self._curSceneId))
+        self._eventExecuteJsLock = True
+        try:
+            subprocess_command = ["/usr/local/bin/node", scriptPath]
             if self._debug: print("{0}".format(subprocess_command))
             subprocess.run(subprocess_command)
             self._selectedSceneId = self._curSceneId

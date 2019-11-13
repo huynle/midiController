@@ -12,7 +12,7 @@ def testReadSequencer():
     GPIO.setmode(GPIO.BCM)
     pin = 17
 
-    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     GPIO.add_event_detect(pin,
                           GPIO.BOTH,
                           callback=detectCallback,
@@ -42,9 +42,9 @@ def testWriteSequencer():
 def detectCallback(pin):
     state = GPIO.input(pin)
     if not state:
-        print("ON at {0}".format(datetime.now()))
-    else:
         print("OFF at {0}".format(datetime.now()))
+    else:
+        print("ON at {0}".format(datetime.now()))
 
 def runJsScript():
     """
